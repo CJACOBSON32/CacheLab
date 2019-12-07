@@ -54,3 +54,7 @@ local.properties
 .cache-main
 .scala_dependencies
 .worksheet
+
+# Specific to CacheLab
+.csim_results
+csim-ref
