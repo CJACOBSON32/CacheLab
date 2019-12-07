@@ -1,4 +1,5 @@
 #include "cachelab.h"
+#include <getopt.h>
 
 typedef struct {
 
@@ -31,12 +32,17 @@ int main(int argc, char *argv[])
 	//Cache size = S * E * B
 	int opt;
 	char *fileName;
+	generalCache aCache;
 	while((opt = getopt(argc,argv,"s:E:b:t:vh")) != -1) {
 
 		switch(opt) {
 
 		case 's':
 			//Cannot be less than or equal to 0
+			aCache.sets = atoi(optarg);
+			if (aCache.sets <= 0) {
+				printf("Error");
+			}
 			break;
 		case 'E':
 			//Cannot be less than or equal to 0
