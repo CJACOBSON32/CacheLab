@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-int getCache(int* address) {
+cache_summary getCache(int* address) {
 	// TODO: Request info from the cache, mark a hit or miss, and updates the cache accordingly
 	return 0;
 }
