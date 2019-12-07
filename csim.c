@@ -7,11 +7,11 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-struct cache {
+typedef struct cache {
 	// TODO: Make a struct with v, tag and byte
 };
 
-struct request {
+typedef struct request {
 	// TODO: store if a request was a hit or miss and what was requested (not sure if this struct is necessary)
 };
 
