@@ -4,11 +4,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 typedef struct {
 
 	char valid;
 	int tag;
+	int dataBlock;
 	int LRU_counter;
 
 } cache_line;
@@ -47,9 +49,15 @@ int main(int argc, char *argv[])
 	int numberOfBlocks;
 	char *fileName;
 	generalCache aCache;
-	while((opt = getopt(argc,argv,"s:E:b:t:vh")) != -1) {
+	while((opt = getopt(argc,argv,"hvs:E:b:t:")) != -1) {
 
 		switch(opt) {
+
+		case 'h':
+			break;
+
+		case 'v':
+			break;
 
 		case 's':
 			//Cannot be less than or equal to 0
@@ -90,10 +98,6 @@ int main(int argc, char *argv[])
 			fileName = optarg;
 			break;
 
-		case 'v':
-			break;
-		case 'h':
-			break;
 		default:
 
 			break;
@@ -114,6 +118,7 @@ int main(int argc, char *argv[])
 
 		aCache.cacheBlock[i].valid = 0;
 		aCache.cacheBlock[i].tag = 0;
+		aCache.cacheBlock[i].dataBlock = 0;
 
 	}
 	//If valid bit = 0, miss

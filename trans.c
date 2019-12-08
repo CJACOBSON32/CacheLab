@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include "cachelab.h"
 
+void transpose32(int M, int N, int A[N][M], int B[M][N]);
+
 int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 
 /* 
@@ -22,6 +24,10 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
+	if (N == 32) {
+
+		transpose32(M, N, A[N][M], B[M][N]);
+	}
 }
 
 /* 
@@ -44,6 +50,43 @@ void trans(int M, int N, int A[N][M], int B[M][N])
         }
     }    
 
+}
+
+/*
+ * transpose32 - A transpose function for a matrix of size 32x32
+ */
+void transpose32(int M, int N, int A[N][M], int B[M][N]) {
+
+	int i, j, blockRow, blockCol, diagonal, temp;
+	int blockSection = 8;
+
+	for (i = 0; i < N; i+= blockSection) {
+
+		for (j = 0; j < M; j += blockSection) {
+
+			for (blockRow = i; blockRow < i+blockSection; blockRow++) {
+
+				for (blockCol = j; blockCol < j+blockSection; blockCol++) {
+
+					if (blockRow == blockCol) {
+
+						temp = A[blockRow][blockCol];
+						diagonal = blockRow;
+
+					} else {
+
+						B[blockCol][blockRow] = A[blockRow][blockCol];
+					}
+				}
+
+				if (i == j) {
+
+					B[diagonal][diagonal] = temp;
+
+				}
+			}
+		}
+	}
 }
 
 /*
