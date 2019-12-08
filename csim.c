@@ -1,11 +1,16 @@
 #include "cachelab.h"
 #include <getopt.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdio.h>
 
 typedef struct {
 
-	int sets;
-	int lines;
-	int blocks;
+	int S; //Number of sets: 2^s
+	int E; //Number of lines in a set
+	int B; //Number of data blocks in each line: 2^b
+	int size;
 
 } generalCache;
 
@@ -32,11 +37,15 @@ int E;
 cache_line cache[][];
 
 //Method for LRU policy(?)
+//Method for help flag(?)
 
 int main(int argc, char *argv[])
 {
 	//Cache size = S * E * B
 	int opt;
+	int s;
+	int b;
+	int numberOfBlocks;
 	char *fileName;
 	generalCache aCache;
 	while((opt = getopt(argc,argv,"s:E:b:t:vh")) != -1) {
@@ -45,30 +54,57 @@ int main(int argc, char *argv[])
 
 		case 's':
 			//Cannot be less than or equal to 0
-			aCache.sets = atoi(optarg);
-			if (aCache.sets <= 0) {
+			if (atoi(optarg) <= 0) {
+
 				printf("Error");
+
 			}
+
+			s = atoi(optarg);
+			aCache.S = pow(2, s);
 			break;
+
 		case 'E':
 			//Cannot be less than or equal to 0
+			if (atoi(optarg) <= 0) {
+
+				printf("Error");
+
+			}
+
+			aCache.E = atoi(optarg);
 			break;
+
 		case 'b':
 			//Cannot be less than or equal to 0
+			if (atoi(optarg) <= 0) {
+
+				printf("Error");
+			}
+
+			b = atoi(optarg);
+			aCache.B = pow(2, b);
 			break;
+
 		case 't':
+
+			fileName = optarg;
 			break;
+
 		case 'v':
 			break;
 		case 'h':
 			break;
 		default:
-			return 0;
+
+			break;
 		}
 	}
 	//Parse the file: L,M, S
 	File *traceFile = fopen(fileName, "r");
 
+	numberOfBlocks = aCache.S * aCache.E;
+	aCache.size = numberOfBlocks * aCache.B;
 	//If valid bit = 0, miss
 	//Otherwise, if tag bit of address = tag bit of cache, hit
 	//If neither miss or hit, it is evicted
@@ -83,15 +119,15 @@ cache_summary* getCache(char type, int address, int size) {
 	cache_summary result[2] = 0;
 
 	switch(type) {
-		case 'L':
-			result = load(address, size);
-			break;
-		case 'S':
-			result = store(address, size);
-			break;
-		case 'M':
-			result = modify(address, size);
-			break;
+	case 'L':
+		result = load(address, size);
+		break;
+	case 'S':
+		result = store(address, size);
+		break;
+	case 'M':
+		result = modify(address, size);
+		break;
 	}
 
 	return result;
