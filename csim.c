@@ -7,20 +7,22 @@
 
 typedef struct {
 
-	int S; //Number of sets: 2^s
-	int E; //Number of lines in a set
-	int B; //Number of data blocks in each line: 2^b
-	int size;
-
-} generalCache;
-
-typedef struct {
-
 	char valid;
 	int tag;
 	int LRU_counter;
 
 } cache_line;
+
+typedef struct {
+
+	int S; //Number of sets: 2^s
+	int E; //Number of lines in a set
+	int B; //Number of data blocks in each line: 2^b
+	int size;
+
+	cache_line *cacheBlock;
+
+} generalCache;
 
 typedef enum {
 
@@ -30,9 +32,6 @@ typedef enum {
 	none
 
 } cache_summary;
-
-int S;
-int E;
 
 cache_line cache[][];
 
@@ -100,11 +99,23 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-	//Parse the file: L,M, S
+	//Helps parse the file: L,M, S
 	File *traceFile = fopen(fileName, "r");
 
 	numberOfBlocks = aCache.S * aCache.E;
 	aCache.size = numberOfBlocks * aCache.B;
+
+	//Use malloc() to get the size needed for the cache
+	aCache.cacheBlock = malloc(aCache.size, sizeof(cache_line));
+
+	int i;
+	//Initialize everything to 0
+	for (i = 0; i < numberOfBlocks; i++) {
+
+		aCache.cacheBlock[i].valid = 0;
+		aCache.cacheBlock[i].tag = 0;
+
+	}
 	//If valid bit = 0, miss
 	//Otherwise, if tag bit of address = tag bit of cache, hit
 	//If neither miss or hit, it is evicted
