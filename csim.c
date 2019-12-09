@@ -152,17 +152,34 @@ cache_summary* getCache(char type, int address, int size) {
 cache_summary* load(int address, int size) {
 	// Load without changing memory, if there is a cache hit, return summary.
 
+	// Search the cache for the requested address
+	for (cache_line row[] : cache)
+		for (cache_line line : row) {
+			if(line.dataBlock == address) {
+				return {cache_summary.hit, 0}
+			}
+		}
+	}
 
 	// If there is a miss, load into cache and return summary
+	store(address, size);
 
-
-	return 0;
+	return {cache_summary.miss, 0};
 }
 
 cache_summary* store(int address, int size) {
-	// Store into main memory and cache
+	// Store into main memory and cache. If there is no room left, replace the one used least recently
 
-	return 0;
+	
+	for (cache_line row[] : cache)
+		for (cache_line line : row) {
+			if(line == 0) {
+				line = {1,0,address,0}
+			}
+		}
+	}
+
+	return {cache_summary.hit, 0}
 }
 
 cache_summary* modify(int address, int size) {
