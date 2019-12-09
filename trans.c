@@ -27,6 +27,15 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 	if (N == 32) {
 
 		transpose32(M, N, A[N][M], B[M][N]);
+
+	} else if (N == 64) {
+
+		transpose64(M, N, A[N][M], B[M][N]);
+
+	} else {
+
+		tranposeOther(M, N, A[M][N], B[M][N]);
+
 	}
 }
 
