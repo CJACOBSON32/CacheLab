@@ -10,7 +10,6 @@ typedef struct {
 
 	char valid;
 	int tag;
-	int dataBlock;
 	int LRU_counter;
 
 } cache_line;
@@ -22,7 +21,7 @@ typedef struct {
 	int B; //Number of data blocks in each line: 2^b
 	int size;
 
-	cache_line *cacheBlock;
+	cache_line cacheBlock[S][E];
 
 } generalCache;
 
@@ -35,7 +34,8 @@ typedef enum {
 
 } cache_summary;
 
-cache_line cache[][];
+generalCache aCache;
+int tagSize = 0;
 
 //Method for LRU policy(?)
 //Method for help flag(?)
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 	int b;
 	int numberOfBlocks;
 	char *fileName;
-	generalCache aCache;
+	
 	while((opt = getopt(argc,argv,"hvs:E:b:t:")) != -1) {
 
 		switch(opt) {
@@ -102,6 +102,8 @@ int main(int argc, char *argv[])
 
 			break;
 		}
+
+		tagSize = 32 - s - b;
 	}
 	//Helps parse the file: L,M, S
 	File *traceFile = fopen(fileName, "r");
@@ -110,7 +112,7 @@ int main(int argc, char *argv[])
 	aCache.size = numberOfBlocks * aCache.B;
 
 	//Use malloc() to get the size needed for the cache
-	aCache.cacheBlock = malloc(aCache.size, sizeof(cache_line));
+	aCache.cacheBlock = malloc(aCache.size, aCache.E * sizeof(cache_line));
 
 	int i;
 	//Initialize everything to 0
@@ -118,7 +120,6 @@ int main(int argc, char *argv[])
 
 		aCache.cacheBlock[i].valid = 0;
 		aCache.cacheBlock[i].tag = 0;
-		aCache.cacheBlock[i].dataBlock = 0;
 
 	}
 	//If valid bit = 0, miss
@@ -153,9 +154,9 @@ cache_summary* load(int address, int size) {
 	// Load without changing memory, if there is a cache hit, return summary.
 
 	// Search the cache for the requested address
-	for (cache_line row[] : cache)
+	for (cache_line row[aCache.E] : cache) {
 		for (cache_line line : row) {
-			if(line.dataBlock == address) {
+			if(line.tag == address) {
 				return {cache_summary.hit, 0}
 			}
 		}
@@ -171,7 +172,7 @@ cache_summary* store(int address, int size) {
 	// Store into main memory and cache. If there is no room left, replace the one used least recently
 
 	
-	for (cache_line row[] : cache)
+	for (cache_line row[] : cache) {
 		for (cache_line line : row) {
 			if(line == 0) {
 				line = {1,0,address,0}
