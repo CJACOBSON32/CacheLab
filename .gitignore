@@ -1,4 +1,7 @@
-
+# CacheLab
 .csim_results
 
 csim-ref
+
+#VSCode
+.vscode/*
