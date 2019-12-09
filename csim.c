@@ -8,7 +8,7 @@
 
 typedef struct {
 
-	char valid;
+	bool valid;
 	int tag;
 	int LRU_counter;
 
@@ -21,7 +21,7 @@ typedef struct {
 	int B; //Number of data blocks in each line: 2^b
 	int size;
 
-	cache_line cacheBlock[S][E];
+	cache_line* cacheBlock;
 
 } generalCache;
 
@@ -135,16 +135,28 @@ cache_summary* getCache(char type, int address, int size) {
 	// Request info from the cache, mark a hit or miss, and update the cache accordingly
 	cache_summary result[2] = 0;
 
+	// Call the appropriate function for each type of memory call
 	switch(type) {
-	case 'L':
-		result = load(address, size);
-		break;
-	case 'S':
-		result = store(address, size);
-		break;
-	case 'M':
-		result = modify(address, size);
-		break;
+		case 'L':
+			result = load(address, size);
+			break;
+		case 'S':
+			result = store(address, size);
+			break;
+		case 'M':
+			result = modify(address, size);
+			break;
+	}
+
+	// Increment LRU_counter for every block
+	for (int i = 0; i < aCache.S, i++) {
+		cache_line row[aCache.E] = aCache.cacheBlock[i];
+		for (int j = 0; j < aCache.E; j++) {
+			cache_line line = row[j];
+			if(line.valid) {
+				line.LRU_counter ++;
+			}
+		}
 	}
 
 	return result;
@@ -154,8 +166,10 @@ cache_summary* load(int address, int size) {
 	// Load without changing memory, if there is a cache hit, return summary.
 
 	// Search the cache for the requested address
-	for (cache_line row[aCache.E] : cache) {
-		for (cache_line line : row) {
+	for (int i = 0; i < aCache.S, i++) {
+		cache_line row[aCache.E] = aCache.cacheBlock[i];
+		for (int j = 0; j < aCache.E; j++) {
+			cache_line line = row[j];
 			if(line.tag == address) {
 				return {cache_summary.hit, 0}
 			}
@@ -172,10 +186,12 @@ cache_summary* store(int address, int size) {
 	// Store into main memory and cache. If there is no room left, replace the one used least recently
 
 	
-	for (cache_line row[] : cache) {
-		for (cache_line line : row) {
-			if(line == 0) {
-				line = {1,0,address,0}
+	for (int i = 0; i < aCache.S, i++) {
+		cache_line row[aCache.E] = aCache.cacheBlock[i];
+		for (int j = 0; j < aCache.E; j++) {
+			cache_line line = row[j];
+			if(line.valid) {
+				line = {1,0,address,0};
 			}
 		}
 	}
@@ -193,4 +209,3 @@ cache_summary* modify(int address, int size) {
 
 	return 0;
 }
-
