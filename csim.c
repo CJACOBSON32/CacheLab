@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
 
 typedef struct {
 
@@ -25,12 +26,19 @@ typedef struct {
 
 } generalCache;
 
-typedef enum {
+enum cache_result {
 
 	hit,
 	miss,
 	eviction,
 	none
+
+};
+
+typedef struct {
+
+	cache_result results[2];
+	cache_line* cacheBlock;
 
 } cache_summary;
 
@@ -131,21 +139,35 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+/**
+ * @brief Request info from the cache, mark a hit or miss, and update the cache accordingly
+ * 
+ * @param type A char signifying how the cache is to be accessed (L - load, S - store, M - modify)
+ * @param address The address in a 32 bit word in the form {tag, s, b}. The tag will be extracted.
+ * @param size The size of the memory block (not used, may be removed)
+ * @return cache_summary* 
+ */
 cache_summary* getCache(char type, int address, int size) {
-	// Request info from the cache, mark a hit or miss, and update the cache accordingly
-	cache_summary result[2] = 0;
+	
+	cache_summary result[2] = NULL;
+
+	// Isolate the tag from the address
+	int tag = address >> (32 - tagSize);
 
 	// Call the appropriate function for each type of memory call
 	switch(type) {
 		case 'L':
-			result = load(address, size);
+			result = load(tag, size);
 			break;
 		case 'S':
-			result = store(address, size);
+			result = store(tag, size);
 			break;
 		case 'M':
-			result = modify(address, size);
+			result = modify(tag, size);
 			break;
+		default:
+			printf("%c is not a access type", type);
+			return NULL;
 	}
 
 	// Increment LRU_counter for every block
@@ -162,50 +184,92 @@ cache_summary* getCache(char type, int address, int size) {
 	return result;
 }
 
-cache_summary* load(int address, int size) {
-	// Load without changing memory, if there is a cache hit, return summary.
+/**
+ * @brief Load without changing memory, if there is a cache hit, return summary.
+ * 
+ * @param tag The tag to search for
+ * @param size 
+ * @return cache_summary* 
+ */
+cache_summary load(int tag, int size) {
 
 	// Search the cache for the requested address
 	for (int i = 0; i < aCache.S, i++) {
 		cache_line row[aCache.E] = aCache.cacheBlock[i];
 		for (int j = 0; j < aCache.E; j++) {
-			cache_line line = row[j];
-			if(line.tag == address) {
-				return {cache_summary.hit, 0}
+			
+			cache_line* line = &row[j];
+			
+			if((*line).tag == tag) {
+				return (cache_summary) {.cacheBlock = line, .result = {hit, NULL}}
 			}
 		}
 	}
 
-	// If there is a miss, load into cache and return summary
+	// If there is a miss, store into cache and return summary
 	store(address, size);
 
-	return {cache_summary.miss, 0};
+	return (cache_summary) {.result = {miss, NULL}};
 }
 
-cache_summary* store(int address, int size) {
-	// Store into main memory and cache. If there is no room left, replace the one used least recently
+/**
+ * @brief Store into main memory and cache. If there is no room left, replace the one used least recently
+ * 
+ * @param tag The tag to give the cache_line being stored
+ * @param size The size of the stored variable (not used, may remove)
+ * @return cache_summary array of length 2
+ */
+cache_summary store(int tag, int size) {
+	cache_summary summary = { .result = {hit, NULL} };
 
-	
+	// cache_line generated from the parameters
+	cache_line newLine = {1,tag,0};
+
+	// Initialize the least recent as the first item to have a point of comparison
+	cache_line* leastRecent = &(aCache.cacheBlock[0][0]);
+
+	// Find an empty space, if one is found, store the block there and return.
 	for (int i = 0; i < aCache.S, i++) {
 		cache_line row[aCache.E] = aCache.cacheBlock[i];
 		for (int j = 0; j < aCache.E; j++) {
-			cache_line line = row[j];
-			if(line.valid) {
-				line = {1,0,address,0};
+
+			cache_line* line = &row[j];
+
+			// Finds an empty space
+			if(!line.valid) {
+				*line = newLine;
+				summary.cacheBlock = line;
+				return ;
 			}
+			
+			// Set a new least recent if one is found
+			if(line.LRU_counter < leastRecent.LRU_counter)
+				leastRecent = line;
 		}
 	}
 
-	return {cache_summary.hit, 0}
+	//Otherwise replace the least recently used
+	*leastRecent = newLine;
+	summary.cacheBlock = leastRecent;
+
+	return 
 }
 
-cache_summary* modify(int address, int size) {
+/**
+ * @brief loads and stores the tag and returns the results contiguously
+ * 
+ * @param tag The tag to search for
+ * @param size 
+ * @return cache_summary* 
+ */
+cache_summary modify(int tag, int size) {
 
 	// Record the result of a load and a store
-	cache_summary sum1 = load(address, size);
-	cache_summary sum2 = store(address, size);
+	cache_summary sum1 = load(tag, size);
+	cache_summary sum2 = store(tag, size);
 
-	cache_summary sums[2] = {sum1,sum2};
+	// Combine both results into an array
+	cache_summary sums = {.cacheBlock = sum1.cacheBlock, .results = {sum1.results[0],sum2.results[0]}};
 
-	return 0;
+	return sums;
 }
