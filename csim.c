@@ -192,7 +192,7 @@ cache_summary* getCache(char type, int address, int size) {
 	}
 
 	// Increment LRU_counter for every block
-	for (int i = 0; i < aCache.S, i++) {
+	for (int i = 0; i < aCache.S; i++) {
 		cache_line row[aCache.E] = aCache.cacheBlock[i];
 		for (int j = 0; j < aCache.E; j++) {
 			cache_line line = row[j];
@@ -209,7 +209,7 @@ cache_summary* load(int address, int size) {
 	// Load without changing memory, if there is a cache hit, return summary.
 
 	// Search the cache for the requested address
-	for (int i = 0; i < aCache.S, i++) {
+	for (int i = 0; i < aCache.S; i++) {
 		cache_line row[aCache.E] = aCache.cacheBlock[i];
 		for (int j = 0; j < aCache.E; j++) {
 			cache_line line = row[j];
@@ -229,7 +229,7 @@ cache_summary* store(int address, int size) {
 	// Store into main memory and cache. If there is no room left, replace the one used least recently
 
 	
-	for (int i = 0; i < aCache.S, i++) {
+	for (int i = 0; i < aCache.S; i++) {
 		cache_line row[aCache.E] = aCache.cacheBlock[i];
 		for (int j = 0; j < aCache.E; j++) {
 			cache_line line = row[j];
