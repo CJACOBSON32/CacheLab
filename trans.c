@@ -97,6 +97,50 @@ void transpose32(int M, int N, int A[N][M], int B[M][N]) {
 		}
 	}
 }
+/*
+ * transpose64 -  A transpose function for a matrix of size 64x64
+ *
+ */
+void transpose64(int M, int N, int A[M][N], int B[M][N]) {
+
+	int i, j, diagonal, temp, blockRow, blockCol;
+	int blockSection = 16;
+
+	for (i = 0; i < M; i+=blockSection) {
+
+		for (j = 0; j < N; j+=blockSection) {
+
+			for (blockRow = i; blockRow < i+blockSection; blockRow++) {
+
+				for(blockCol = j; blockCol < j+blockSection; blockCol++) {
+
+					if (blockRow == blockCol) {
+
+						temp = A[blockRow][blockCol];
+						diagonal = blockRow;
+					} else {
+
+						B[i][j] = A[blockCol][blockRow];
+					}
+				}
+				if (i == j) {
+
+					B[diagonal][diagonal] = temp;
+				}
+			}
+
+		}
+	}
+
+}
+/*
+ * transposeOther - A transpose function for a matrix with an unknown size for M and N
+ *
+ */
+void transposeOther(int M, int N, int A[M][N], int B[M][N]) {
+
+
+}
 
 /*
  * registerFunctions - This function registers your transpose

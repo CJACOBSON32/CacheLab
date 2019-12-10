@@ -56,7 +56,7 @@ enum cache_result {
  */
 typedef struct {
 
-	cache_result results[2];
+	enum cache_result results[2];
 	cache_line* cacheBlock;
 	char type;
 
