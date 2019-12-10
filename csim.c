@@ -104,16 +104,6 @@ int main(int argc, char *argv[])
 		tagSize = 32 - s - b;
 	}
 
-	//Helps parse the file: L,M, S
-	FILE* traceFile = fopen(fileName, "r");
-
-	//If the trace file is not one of the ones listed, sends out an error.
-	if(!traceFile) {
-
-		printf("Error no file or directory found.\n");
-
-	}
-
 	numberOfBlocks = aCache.S * aCache.E;
 	aCache.size = numberOfBlocks * aCache.B;
 
@@ -162,7 +152,7 @@ int main(int argc, char *argv[])
 	
 
 	// TODO: Get the cmd arguments (flags, trace file)
-	fclose(traceFile);
+	fclose(traces);
 	free(aCache.cacheBlock);
 
 	printSummary(0, 0, 0);

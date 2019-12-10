@@ -114,4 +114,4 @@ char* substr(char* string, int start, int end);
  * 
  * @param summary 
  */
-void printVerbose(cache_summary summary);
+void printVerbose(cache_summary summary, int address, int size);
