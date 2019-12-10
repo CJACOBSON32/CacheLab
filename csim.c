@@ -1,5 +1,5 @@
 /*
- * Names:
+ * Names: Cameron Jacobson & Winnie Ly
  *
  */
 #include "csim.h"
