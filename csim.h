@@ -51,12 +51,14 @@ enum cache_result {
  * @brief Result
  * 
  * @param results List of two result enums based (second one is used if modify is called)
- * @param cacheBlock Pointer to the cache block loaded and/or stored 
+ * @param cacheBlock Pointer to the cache block loaded and/or stored
+ * @param type Char representing whether the access was L (load), S (store), or M (modify)
  */
 typedef struct {
 
 	cache_result results[2];
 	cache_line* cacheBlock;
+	char type;
 
 } cache_summary;
 
@@ -106,3 +108,10 @@ cache_summary getCache(char type, int address, int size);
  * @return char* (substring)
  */
 char* substr(char* string, int start, int end);
+
+/**
+ * @brief Prints a cache_summary to the terminal with printf
+ * 
+ * @param summary 
+ */
+void printVerbose(cache_summary summary);

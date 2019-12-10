@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
 	int opt;
 	int s;
 	int b;
+	bool verbose = false;
 	int numberOfBlocks;
 	char *fileName;
 
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
 			break;
 
 		case 'v':
+			verbose = true;
 			break;
 
 		case 's':
@@ -151,6 +153,9 @@ int main(int argc, char *argv[])
 			size = atoi(substr(content, 6, 6));
 
 			cache_summary summary = getCache(type, address, size);
+
+			if(verbose)
+				printVerbose(summary, address, size);
 		}
 	}
 
@@ -166,7 +171,7 @@ int main(int argc, char *argv[])
 
 cache_summary getCache(char type, int address, int size) {
 	
-	cache_summary result[2] = NULL;
+	cache_summary result = {0};
 
 	// Isolate the tag from the address
 	int tag = address >> (32 - tagSize);
@@ -186,6 +191,8 @@ cache_summary getCache(char type, int address, int size) {
 			printf("%c is not a access type", type);
 			return NULL;
 	}
+
+	result.type = type;
 
 	// Increment LRU_counter for every block
 	for (int i = 0; i < aCache.S; i++) {
@@ -232,7 +239,7 @@ cache_summary store(int tag, int size) {
 	cache_line* leastRecent = &(aCache.cacheBlock[0][0]);
 
 	// Find an empty space, if one is found, store the block there and return.
-	for (int i = 0; i < aCache.S, i++) {
+	for (int i = 0; i < aCache.S; i++) {
 		cache_line row[aCache.E] = aCache.cacheBlock[i];
 		for (int j = 0; j < aCache.E; j++) {
 
@@ -279,4 +286,28 @@ char* substr(char* string, int start, int end) {
 	substring[subSize - 1] = "\0";
 
 	return substring;
+}
+
+void printVerbose(cache_summary summary, int address, int size) {
+	char result[32] = "";
+
+	for(int i = 0; i < 2; i++) {
+		switch (summary.results[i])
+		{
+		case hit:
+			strcat(result, "Hit");
+			break;
+		case miss:
+			strcat(result, "Miss");
+			break;
+		case eviction:
+			strcat(result, "Miss Eviction");
+			break;
+		default:
+			result = "none";
+			break;
+		}
+	}
+
+	printf("%c %i,%i\t%s", summary.type, address, size, result);
 }
