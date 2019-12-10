@@ -217,9 +217,9 @@ cache_summary* getCache(char type, int address, int size) {
 	for (int i = 0; i < aCache.S; i++) {
 		cache_line row[aCache.E] = aCache.cacheBlock[i];
 		for (int j = 0; j < aCache.E; j++) {
-			cache_line line = row[j];
+			cache_line* line = &row[j];
 			if(line.valid) {
-				line.LRU_counter ++;
+				*line.LRU_counter ++;
 			}
 		}
 	}
