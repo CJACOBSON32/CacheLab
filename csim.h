@@ -97,3 +97,12 @@ cache_summary modify(int tag, int size);
  */
 cache_summary getCache(char type, int address, int size);
 
+/**
+ * @brief Gets the substring of a given string (inclusive range)
+ * 
+ * @param string The string to get the substring of
+ * @param start The starting index of the substring
+ * @param end The final index of the substring
+ * @return char* (substring)
+ */
+char* substr(char* string, int start, int end);

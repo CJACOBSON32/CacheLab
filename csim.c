@@ -28,7 +28,6 @@ void helpFlag() {
 
 }
 
-
 int main(int argc, char *argv[])
 {
 	//Cache size = S * E * B
@@ -128,9 +127,34 @@ int main(int argc, char *argv[])
 
 	}
 
-	//If valid bit = 0, miss
-	//Otherwise, if tag bit of address = tag bit of cache, hit
-	//If neither miss or hit, it is evicted
+	// Parse through traces and make memory calls
+
+	FILE* traces = fopen(fileName, "r");
+	int line = 0;
+	char content[512];
+
+	char type;
+	int address;
+	int size;
+
+	if(traces == 0) printf("Couldn't open %s", fileName); // Print an error if the file couldn't be read or is empty
+	else {
+		//If valid bit = 0, miss
+		//Otherwise, if tag bit of address = tag bit of cache, hit
+		//If neither miss or hit, it is evicted
+		
+		while(fgets(content, 512, traces)) {
+			line ++;
+			
+			type = content[0];
+			address = atoi(substr(content, 3, 4));
+			size = atoi(substr(content, 6, 6));
+
+			cache_summary summary = getCache(type, address, size);
+		}
+	}
+
+	
 
 	// TODO: Get the cmd arguments (flags, trace file)
 	fclose(traceFile);
@@ -244,4 +268,15 @@ cache_summary modify(int tag, int size) {
 	cache_summary sums = {.cacheBlock = sum1.cacheBlock, .results = {sum1.results[0],sum2.results[0]}};
 
 	return sums;
+}
+
+char* substr(char* string, int start, int end) {
+	int subSize = end - start + 2;
+	char substring[subSize];
+	
+	memcpy( substring, &string[start], subSize - 1);
+
+	substring[subSize - 1] = "\0";
+
+	return substring;
 }
