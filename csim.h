@@ -42,7 +42,6 @@ enum cache_result {
 
 	hit,
 	miss,
-	eviction,
 	none
 
 };
@@ -57,7 +56,8 @@ enum cache_result {
 typedef struct {
 
 	enum cache_result results[2];
-	cache_line* cacheBlock;
+	bool eviction;
+	cache_line** cacheBlock;
 	char type;
 
 } cache_summary;
@@ -69,7 +69,7 @@ typedef struct {
  * @param size 
  * @return cache_summary* 
  */
-cache_summary load(int tag, int size);
+cache_summary load(int tag, int set);
 
 /**
  * @brief Store into main memory and cache. If there is no room left, replace the one used least recently
@@ -78,7 +78,7 @@ cache_summary load(int tag, int size);
  * @param size The size of the stored variable (not used, may remove)
  * @return cache_summary array of length 2
  */
-cache_summary store(int tag, int size);
+cache_summary store(int tag, int set);
 
 /**
  * @brief loads and stores the tag and returns the results contiguously
@@ -87,7 +87,7 @@ cache_summary store(int tag, int size);
  * @param size 
  * @return cache_summary* 
  */
-cache_summary modify(int tag, int size);
+cache_summary modify(int tag, int set);
 
 /**
  * @brief Request info from the cache, mark a hit or miss, and update the cache accordingly

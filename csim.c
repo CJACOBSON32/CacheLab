@@ -6,6 +6,8 @@
 
 generalCache aCache;
 int tagSize = 0;
+int s;
+int b;
 
 //Method for LRU policy(?)
 
@@ -32,10 +34,7 @@ int main(int argc, char *argv[])
 {
 	//Cache size = S * E * B
 	int opt;
-	int s;
-	int b;
 	bool verbose = false;
-	int numberOfBlocks;
 	char *fileName;
 
 	if (argc == 1) {
@@ -101,21 +100,20 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		tagSize = 32 - s - b;
 	}
 
-	numberOfBlocks = aCache.S * aCache.E;
 	aCache.size = numberOfBlocks * aCache.B;
 
+	tagSize = 32 - s - b;
+
 	//Use malloc() to get the size needed for the cache
-	aCache.cacheBlock = malloc(aCache.size * sizeof(cache_line));
+	aCache.cacheBlock = malloc(aCache.size * sizeof(cache_line*));
 
-	int i;
 	//Initialize everything to 0
-	for (i = 0; i < numberOfBlocks; i++) {
-
-		aCache.cacheBlock[i].valid = 0;
-		aCache.cacheBlock[i].tag = 0;
+	for (int i = 0; i < aCache.S; i++) {
+		for (int j = 0; j < aCache.E; j++)
+		aCache.cacheBlock[i][j].valid = 0;
+		(aCache.cacheBlock[i][j]).tag = 0;
 
 	}
 
@@ -163,8 +161,9 @@ cache_summary getCache(char type, int address, int size) {
 	
 	cache_summary result = {0};
 
-	// Isolate the tag from the address
+	// Isolate the tag and set from the address
 	int tag = address >> (32 - tagSize);
+	int set = (address >> b) & !(INT_MIN >> tagSize);
 
 	// Call the appropriate function for each type of memory call
 	switch(type) {
@@ -198,7 +197,7 @@ cache_summary getCache(char type, int address, int size) {
 	return result;
 }
 
-cache_summary load(int tag, int size) {
+cache_summary load(int tag, int set) {
 
 	// Search the cache for the requested address
 	for (int i = 0; i < aCache.S; i++) {
@@ -214,12 +213,12 @@ cache_summary load(int tag, int size) {
 	}
 
 	// If there is a miss, store into cache and return summary
-	store(address, size);
+	store(address, set);
 
 	return (cache_summary) {.result = {miss, NULL}};
 }
 
-cache_summary store(int tag, int size) {
+cache_summary store(int tag, int set) {
 	cache_summary summary = { .result = {hit, NULL} };
 
 	// cache_line generated from the parameters
@@ -255,7 +254,7 @@ cache_summary store(int tag, int size) {
 	return 
 }
 
-cache_summary modify(int tag, int size) {
+cache_summary modify(int tag, int set) {
 
 	// Record the result of a load and a store
 	cache_summary sum1 = load(tag, size);
