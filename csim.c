@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
 	char *fileName;
 
 	if (argc == 1) {
+		printf("help");
 		helpFlag();
 	}
 
@@ -173,7 +174,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	
+
 
 	// TODO: Get the cmd arguments (flags, trace file)
 	fclose(traces);
@@ -184,7 +185,7 @@ int main(int argc, char *argv[])
 }
 
 cache_summary getCache(char type, int address, int size) {
-	
+
 	cache_summary result = {0};
 
 	// Isolate the tag and set from the address
@@ -238,9 +239,9 @@ cache_summary load(int tag, int set) {
 
 	// Search the set for the requested address
 	for (int i = 0; i < aCache.E; i++) {
-			
+
 		cache_line* line = &(aCache.cacheBlock[set][i]);
-			
+
 		// Return the line
 		if((*line).tag == tag && (*line).valid)
 			return (cache_summary) {.cacheBlock = line, .results = {hit, none}};
@@ -273,7 +274,7 @@ cache_summary store(int tag, int set) {
 			summary.results[0] = miss;
 			return summary;
 		}
-			
+
 		// Set a new least recent if one is found
 		if((*line).LRU_counter < (*leastRecent).LRU_counter)
 			leastRecent = line;
