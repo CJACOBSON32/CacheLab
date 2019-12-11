@@ -14,6 +14,8 @@
 #include "cachelab.h"
 
 void transpose32(int M, int N, int A[N][M], int B[M][N]);
+void transpose64(int M, int N, int A[N][M], int B[M][N]);
+void tranposeOther(int M, int N, int A[N][M], int B[M][N]);
 
 int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 
@@ -174,7 +176,7 @@ void transpose64(int M, int N, int A[M][N], int B[M][N]) {
  * transposeOther - A transpose function for a matrix with an unknown size for M and N
  *
  */
-void transposeOther(int M, int N, int A[M][N], int B[M][N]) {
+void tranposeOther(int M, int N, int A[M][N], int B[M][N]) {
 
 
 }
