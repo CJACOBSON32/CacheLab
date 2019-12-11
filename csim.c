@@ -38,7 +38,6 @@ int main(int argc, char *argv[])
 	char *fileName;
 
 	if (argc == 1) {
-		printf("help");
 		helpFlag();
 	}
 
