@@ -1,5 +1,5 @@
 /*
- * Names: Cameron Jacobson & Winnie Ly
+ * Names: Cameron Jacobson, Winnie Ly
  *
  */
 #include "csim.h"
@@ -178,21 +178,23 @@ cache_summary getCache(char type, int address, int size) {
 			break;
 		default:
 			printf("%c is not a access type", type);
-			return NULL;
+			return result;
 	}
 
 	result.type = type;
 
 	// Increment LRU_counter for every block
 	for (int i = 0; i < aCache.S; i++) {
-		cache_line row[aCache.E] = aCache.cacheBlock[i];
 		for (int j = 0; j < aCache.E; j++) {
 			cache_line* line = &row[j];
 			if(line.valid) {
-				line.LRU_counter ++;
+				*line.LRU_counter ++;
 			}
 		}
 	}
+
+	// Reset the LRU_counter for the accessed block
+	(*result.cacheBlock).LRU_counter = 0;
 
 	return result;
 }
@@ -201,24 +203,23 @@ cache_summary load(int tag, int set) {
 
 	// Search the cache for the requested address
 	for (int i = 0; i < aCache.S; i++) {
-		cache_line row[aCache.E] = aCache.cacheBlock[i];
 		for (int j = 0; j < aCache.E; j++) {
 			
-			cache_line* line = &row[j];
+			cache_line* line = &(aCache.cacheBlock[i][j]);
 			
-			if((*line).tag == tag) {
-				return (cache_summary) {.cacheBlock = line, .result = {hit, NULL}}
-			}
+			// Return the line
+			if((*line).tag == tag)
+				return (cache_summary) {.cacheBlock = line, .results = {hit, none}};
 		}
 	}
 
 	// If there is a miss, store into cache and return summary
-	store(address, set);
+	store(address, size);
 
 	return (cache_summary) {.result = {miss, NULL}};
 }
 
-cache_summary store(int tag, int set) {
+cache_summary store(int tag, int size) {
 	cache_summary summary = { .result = {hit, NULL} };
 
 	// cache_line generated from the parameters
@@ -229,32 +230,31 @@ cache_summary store(int tag, int set) {
 
 	// Find an empty space, if one is found, store the block there and return.
 	for (int i = 0; i < aCache.S; i++) {
-		cache_line row[aCache.E] = aCache.cacheBlock[i];
 		for (int j = 0; j < aCache.E; j++) {
 
-			cache_line* line = &row[j];
+			cache_line* line = &(aCache.cacheBlock[i][j]);
 
 			// Finds an empty space
-			if(!line.valid) {
+			if(!(*line).valid) {
 				*line = newLine;
 				summary.cacheBlock = line;
-				return ;
+				return summary;
 			}
 			
 			// Set a new least recent if one is found
-			if(line.LRU_counter < leastRecent.LRU_counter)
+			if((*line).LRU_counter < (*leastRecent).LRU_counter)
 				leastRecent = line;
 		}
 	}
 
-	//Otherwise replace the least recently used
+	//Otherwise replace the least recently used and return an eviction
 	*leastRecent = newLine;
-	summary.cacheBlock = leastRecent;
+	summary = (cache_summary) {.cacheBlock = leastRecent, .result = {eviction, none}};
 
-	return 
+	return summary;
 }
 
-cache_summary modify(int tag, int set) {
+cache_summary modify(int tag, int size) {
 
 	// Record the result of a load and a store
 	cache_summary sum1 = load(tag, size);
@@ -293,7 +293,7 @@ void printVerbose(cache_summary summary, int address, int size) {
 			strcat(result, "Miss Eviction");
 			break;
 		default:
-			result = "none";
+			strcat(result, "none");
 			break;
 		}
 	}
