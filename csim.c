@@ -129,6 +129,10 @@ int main(int argc, char *argv[])
 	int address;
 	int size;
 
+	int hits = 0;
+	int misses = 0;
+	int evictions = 0;
+
 	if(traces == 0) printf("Couldn't open %s", fileName); // Print an error if the file couldn't be read or is empty
 	else {
 		//If valid bit = 0, miss
@@ -146,6 +150,22 @@ int main(int argc, char *argv[])
 
 			if(verbose)
 				printVerbose(summary, address, size);
+
+			for (int i = 0; i < 2; i++) {
+				switch(summary.results[i]) {
+					case hit:
+						hits ++;
+						break;
+					case miss:
+						misses ++;
+						break;
+					case eviction:
+						evictions ++;
+						break;
+					case none:
+						break;
+				}
+			}
 		}
 	}
 

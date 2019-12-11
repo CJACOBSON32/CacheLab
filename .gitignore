@@ -5,3 +5,5 @@ csim-ref
 
 #VSCode
 .vscode/*
+
+.cproject
