@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdbool.h>
+#include "limits.h"
 
 // stdbool not working for some reason
 typedef int bool;
@@ -39,7 +40,7 @@ typedef struct {
 	int B; //Number of data blocks in each line: 2^b
 	int size;
 
-	cache_line* cacheBlock;
+	cache_line** cacheBlock;
 
 } generalCache;
 
@@ -47,6 +48,7 @@ enum cache_result {
 
 	hit,
 	miss,
+	eviction,
 	none
 
 };
@@ -61,8 +63,7 @@ enum cache_result {
 typedef struct {
 
 	enum cache_result results[2];
-	bool eviction;
-	cache_line** cacheBlock;
+	cache_line* cacheBlock;
 	char type;
 
 } cache_summary;
