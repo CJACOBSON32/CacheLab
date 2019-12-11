@@ -174,7 +174,7 @@ cache_summary getCache(char type, int address, int size) {
 			result = load(tag, set);
 			break;
 		case 'S':
-			result = store(tag, set);
+			result = load(tag, set);
 			break;
 		case 'M':
 			result = modify(tag, set);
@@ -265,7 +265,7 @@ cache_summary modify(int tag, int set) {
 	cache_summary sum2 = load(tag, set);
 
 	// Combine both results into an array
-	cache_summary sums = {.cacheBlock = sum1.cacheBlock, .results = {sum1.results[0],sum2.results[0]}};
+	cache_summary sums = {.cacheBlock = sum2.cacheBlock, .results = {sum1.results[0],sum2.results[0]}};
 
 	return sums;
 }
@@ -273,7 +273,7 @@ cache_summary modify(int tag, int set) {
 char* substr(char* string, int start, int end) {
 	int subSize = end - start;
 
-	char* substring = (char*)malloc(sizeof(char) * (subSize + 1));
+	char* substring = malloc(sizeof(char) * (subSize + 1));
 	
 	strncpy( substring, &string[start], subSize - 1);
 
