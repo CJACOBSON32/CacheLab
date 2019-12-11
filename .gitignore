@@ -7,3 +7,23 @@ csim-ref
 .vscode/*
 
 .cproject
+
+trace.f0
+
+trace.f1
+
+trace.f2
+
+trace.f3
+
+trace.tmp
+
+.marker
+
+chjacobson-handin.tar
+
+driver.py
+
+test-trans
+
+tracegen

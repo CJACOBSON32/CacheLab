@@ -3,13 +3,13 @@
  *
  */
 #include "csim.h"
+#define INT_SIZE 64
 
 generalCache aCache;
 int tagSize = 0;
 int s;
 int b;
-
-//Method for LRU policy(?)
+bool extraVerbose = false;
 
 /*
  * helpFlag - method to provide user the correct arguments when running the program
@@ -32,7 +32,7 @@ void helpFlag() {
 
 int main(int argc, char *argv[])
 {
-	//Cache size = S * E * B
+
 	int opt;
 	bool verbose = false;
 	char *fileName;
@@ -41,76 +41,77 @@ int main(int argc, char *argv[])
 		helpFlag();
 	}
 
-	while((opt = getopt(argc,argv,"hvs:E:b:t:")) != -1) {
+	while((opt = getopt(argc,argv,"ihvs:E:b:t:")) != -1) {
 
 		switch(opt) {
 
-		case 'h':
-			helpFlag();
-			break;
-
-		case 'v':
-			verbose = true;
-			break;
-
-		case 's':
-			//Cannot be less than or equal to 0
-			if (atoi(optarg) <= 0) {
-
-
-				printf("Error");
+			case 'h':
+				printf("Makes it to switch h\n");
 				helpFlag();
+				break;
 
-			}
+			case 'v':
+				verbose = true;
+				break;
 
-			s = (atoi(optarg));
-			aCache.S = pow(2, s);
-			break;
+			case 's':
+				//Cannot be less than or equal to 0
+				if (atoi(optarg) <= 0) {
+					printf("Error, s cannot be <= 0");
+					helpFlag();
+				}
 
-		case 'E':
-			//Cannot be less than or equal to 0
-			if (atoi(optarg) <= 0) {
+				s = (atoi(optarg));
+				aCache.S = (int)pow(2, (double)s);
+				break;
+			case 'i':
+				extraVerbose = true;
+				break;
 
-				printf("Error");
+			case 'E':
+				//Cannot be less than or equal to 0
+				if (atoi(optarg) <= 0) {
+					printf("Error, E cannot be <= 0");
+					helpFlag();
+				}
+
+				aCache.E = (atoi(optarg));
+				break;
+
+			case 'b':
+				//Cannot be less than or equal to 0
+				if (atoi(optarg) <= 0) {
+
+					printf("Error, b cannot be <= 0");
+					helpFlag();
+				}
+
+				b = (atoi(optarg));
+				aCache.B = (int)pow(2, b);
+				break;
+
+			case 't':
+
+				fileName = optarg;
+				break;
+
+			default:
 				helpFlag();
-
-			}
-
-			aCache.E = (atoi(optarg));
-			break;
-
-		case 'b':
-			//Cannot be less than or equal to 0
-			if (atoi(optarg) <= 0) {
-
-				printf("Error");
-				helpFlag();
-			}
-
-			b = (atoi(optarg));
-			aCache.B = pow(2, b);
-			break;
-
-		case 't':
-
-			fileName = optarg;
-			break;
-
-		default:
-			helpFlag();
-			break;
+				break;
 		}
 
 	}
 
 	aCache.size = aCache.S * aCache.E * aCache.B;
 
-	tagSize = 32 - s - b;
+	tagSize = INT_SIZE - s - b;
+	if(extraVerbose)
+		printf("tagSize = %i\n", tagSize);
 
 	//Use malloc() to get the size needed for the cache
 	aCache.cacheBlock = malloc(aCache.S * sizeof(cache_line*));
 
-	//Initialize everything to 0
+	//Initialize everything to 0 or null
 	for (int i = 0; i < aCache.S; i++) {
 		aCache.cacheBlock[i] = malloc(aCache.E * sizeof(cache_line));
 		for (int j = 0; j < aCache.E; j++) {
@@ -124,7 +125,7 @@ int main(int argc, char *argv[])
 
 	FILE* traces = fopen(fileName, "r");
 	int line = 0;
-	char content[1024];
+	char content[512];
 
 	char type;
 	int address;
@@ -136,16 +137,18 @@ int main(int argc, char *argv[])
 
 	if(traces == 0) printf("Couldn't open %s", fileName); // Print an error if the file couldn't be read or is empty
 	else {
-		//If valid bit = 0, miss
-		//Otherwise, if tag bit of address = tag bit of cache, hit
-		//If neither miss or hit, it is evicted
 		
 		while(fgets(content, 512, traces)) {
 			line ++;
 			
-			type = content[0];
-			address = atoi(substr(content, 3, 4));
-			size = atoi(substr(content, 6, 6));
+			type = content[1];
+
+			// Gets the string of the numerical portion of the line content and parse through them with strtok
+			char* numbers = content + 3;
+			char* token = strtok(numbers, ",");
+			address = atoi(token);
+			token = strtok(NULL, ",");
+			size = atoi(token);
 
 			cache_summary summary = getCache(type, address, size);
 
@@ -176,7 +179,7 @@ int main(int argc, char *argv[])
 	fclose(traces);
 	free(aCache.cacheBlock);
 
-	printSummary(0, 0, 0);
+	printSummary(hits, misses, evictions);
 	return 0;
 }
 
@@ -185,9 +188,14 @@ cache_summary getCache(char type, int address, int size) {
 	cache_summary result = {0};
 
 	// Isolate the tag and set from the address
-	int tag = address >> (32 - tagSize);
-	int set = (address >> b) & ((int)(pow(2, tagSize) - 1) >> tagSize);
+	int tag = address >> (INT_SIZE - tagSize);
+	int set = ((address << (tagSize - 1)) >> (tagSize - 1)) >> b;
 
+	if(extraVerbose)
+		printf("\naddress:%#05x\ntag: %i\nset: %i\n", address, tag, set);
+
+	if(set < 0)
+		printf("Error, set index cannot be negative");
 
 	// Call the appropriate function for each type of memory call
 	switch(type) {
@@ -234,7 +242,7 @@ cache_summary load(int tag, int set) {
 		cache_line* line = &(aCache.cacheBlock[set][i]);
 			
 		// Return the line
-		if((*line).tag == tag)
+		if((*line).tag == tag && (*line).valid)
 			return (cache_summary) {.cacheBlock = line, .results = {hit, none}};
 	}
 
@@ -296,7 +304,7 @@ char* substr(char* string, int start, int end) {
 
 	char* substring = malloc(sizeof(char) * (subSize + 1));
 	
-	strncpy( substring, &string[start], subSize - 1);
+	strncpy( substring, &string[start], subSize + 1);
 
 	return substring;
 }
@@ -317,12 +325,11 @@ void printVerbose(cache_summary summary, int address, int size) {
 				strcat(result, "Miss Eviction");
 				break;
 			default:
-				strcat(result, "none");
 				break;
 		}
 
 		strcat(result, " ");
 	}
 
-	printf("%c %i,%i\t%s", summary.type, address, size, result);
+	printf("%c %i,%i\t%s\n", summary.type, address, size, result);
 }
