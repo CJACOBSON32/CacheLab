@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 			//Cannot be less than or equal to 0
 			if (atoi(optarg) <= 0) {
 
+
 				printf("Error");
 				helpFlag();
 
@@ -123,7 +124,7 @@ int main(int argc, char *argv[])
 
 	FILE* traces = fopen(fileName, "r");
 	int line = 0;
-	char content[512];
+	char content[1024];
 
 	char type;
 	int address;
@@ -162,7 +163,7 @@ int main(int argc, char *argv[])
 					case eviction:
 						evictions ++;
 						break;
-					case none:
+					default:
 						break;
 				}
 			}

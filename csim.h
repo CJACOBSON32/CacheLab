@@ -9,9 +9,6 @@
 #include "limits.h"
 
 // stdbool not working for some reason
-typedef int bool;
-#define true 1;
-#define false 0;
 
 /**
  * @brief Contains a single block of cache
